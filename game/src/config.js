@@ -54,27 +54,54 @@ export const GAME = {
   runExposure: 1.5,
 };
 
+/** Wall-mounted security cameras: they sweep, they watch, they call guards. */
+export const CAMERA = {
+  visionRange: 190,
+  visionHalfAngle: 0.46, // radians, ~26 degrees each side
+  /** Suspicion gained per second at point blank in full light. */
+  spotRate: 0.85,
+  /** Suspicion lost per second while the player stays unseen. */
+  calmRate: 0.3,
+  /** Seconds a camera stays blind after raising an alarm. */
+  alarmCooldown: 4,
+};
+
 export const PALETTE = {
   backdrop: '#070a14',
   floor: '#232a44',
   floorAlt: '#262e4c',
-  shadowFloor: '#151a2e',
+  floorGrout: '#1b2138',
+  floorSpeckle: 'rgba(160, 175, 230, 0.10)',
+  moonPatch: 'rgba(150, 180, 255, 0.07)',
+  shadowFloor: '#12172a',
   wall: '#3d4a7a',
-  wallTop: '#55659e',
+  wallTop: '#6678b5',
+  wallSide: '#2c3760',
+  wallSeam: 'rgba(12, 16, 34, 0.45)',
+  wallShadow: 'rgba(2, 4, 10, 0.35)',
   crate: '#8a6a3b',
   crateEdge: '#a9834e',
+  cratePlank: 'rgba(60, 40, 16, 0.35)',
   exitDoor: '#2e8b6e',
   exitGlow: '#57e6b0',
   sapphire: '#6fd3ff',
   sapphireCore: '#e8f9ff',
   player: '#ffd75e',
   playerTrim: '#2b2b3d',
+  playerCloak: '#b8912f',
   guard: '#e85d5d',
   guardTrim: '#5e2430',
+  sentinel: '#c792ff',
+  sentinelTrim: '#3d245e',
   coneCalm: 'rgba(255, 214, 90, 0.20)',
   coneSuspicious: 'rgba(255, 150, 60, 0.30)',
   coneAlert: 'rgba(255, 70, 70, 0.34)',
   coneEdge: 'rgba(255, 230, 150, 0.45)',
+  cameraBody: '#8fd8ff',
+  cameraTrim: '#1d3a52',
+  cameraCone: 'rgba(110, 200, 255, 0.20)',
+  cameraConeAlert: 'rgba(255, 90, 120, 0.32)',
+  darkness: 'rgba(3, 5, 14, 0.52)',
   hudText: '#e8ecff',
   hudDim: '#9aa5cf',
   hudPanel: 'rgba(10, 13, 28, 0.82)',

@@ -1,7 +1,10 @@
 // The three floors of the Starlight Vault. Each map is 32x18 tiles:
 //   # wall   . floor   S shadow floor   C crate (cover)
 //   P player start   * Star Sapphire   X exit door
-// Guard routes are tile-coordinate waypoint loops, walked in order.
+// Guard routes are tile-coordinate waypoint loops, walked in order;
+// a guard marked `sentinel` holds its post and sweeps its gaze
+// instead. Cameras are tile-coordinate posts with a base facing
+// (radians) and a sweep width — they watch, and raise the alarm.
 // parseLevel turns a floor definition into the grid and spawn points
 // the simulation runs on.
 
@@ -36,6 +39,9 @@ export const FLOORS = [
       { route: [[15, 9], [21, 9]], phase: 0 },
       { route: [[27, 7], [30, 7], [30, 12], [27, 12]], phase: 1 },
     ],
+    // One camera watches the sapphire column — an easy first lesson
+    // in timing a sweep.
+    cameras: [{ at: [30, 5], angle: Math.PI, sweep: 0.55, speed: 0.5, phase: 0 }],
   },
   {
     name: 'Floor 2 · The Gallery',
@@ -65,6 +71,10 @@ export const FLOORS = [
       { route: [[20, 12], [23, 12], [23, 14], [20, 14]], phase: 3 },
       { route: [[26, 2], [30, 2], [30, 4], [26, 4]], phase: 2 },
     ],
+    cameras: [
+      { at: [15, 5], angle: Math.PI / 2, sweep: 0.7, speed: 0.6, phase: 1.2 },
+      { at: [29, 13], angle: Math.PI, sweep: 0.6, speed: 0.45, phase: 3.1 },
+    ],
   },
   {
     name: 'Floor 3 · The Star Vault',
@@ -92,8 +102,14 @@ export const FLOORS = [
       { route: [[2, 5], [5, 5], [5, 7], [2, 7]], phase: 0 },
       { route: [[8, 1], [13, 1], [13, 3], [8, 3]], phase: 1 },
       { route: [[17, 5], [21, 5], [21, 7], [17, 7]], phase: 2 },
-      { route: [[25, 9], [30, 9], [30, 11], [25, 11]], phase: 3 },
+      // A sentinel holds the south-east approach and sweeps it.
+      { sentinel: true, at: [27, 10], angle: -Math.PI / 2, sweep: 0.85, speed: 0.5 },
       { route: [[8, 13], [13, 13], [13, 15], [8, 15]], phase: 0 },
+    ],
+    cameras: [
+      { at: [15, 5], angle: Math.PI / 2, sweep: 0.65, speed: 0.55, phase: 0.4 },
+      { at: [21, 10], angle: Math.PI, sweep: 0.6, speed: 0.65, phase: 2.2 },
+      { at: [29, 13], angle: -Math.PI / 2, sweep: 0.7, speed: 0.5, phase: 4.0 },
     ],
   },
 ];
@@ -123,9 +139,26 @@ export function parseLevel(floor) {
     }
   }
   const guardSpawns = floor.guards.map((def) => {
+    if (def.sentinel) {
+      const home = tileCenter(def.at[0], def.at[1]);
+      return {
+        x: home.x,
+        y: home.y,
+        route: [home],
+        waypoint: 0,
+        sentinel: true,
+        sweepBase: def.angle,
+        sweepAmp: def.sweep,
+        sweepSpeed: def.speed,
+      };
+    }
     const route = def.route.map(([col, row]) => tileCenter(col, row));
     const start = route[def.phase % route.length];
     return { x: start.x, y: start.y, route, waypoint: (def.phase + 1) % route.length };
   });
-  return { grid, playerStart, sapphire, exit, guardSpawns, tileSize: TILE };
+  const cameraSpawns = (floor.cameras ?? []).map((def) => {
+    const point = tileCenter(def.at[0], def.at[1]);
+    return { x: point.x, y: point.y, angle: def.angle, sweep: def.sweep, speed: def.speed, phase: def.phase };
+  });
+  return { grid, playerStart, sapphire, exit, guardSpawns, cameraSpawns, tileSize: TILE };
 }

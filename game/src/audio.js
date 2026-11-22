@@ -102,6 +102,14 @@ export function createAudio() {
       tone({ frequency: 880, endFrequency: 660, duration: 0.22, gain: 0.16, type: 'sawtooth' });
       tone({ frequency: 880, endFrequency: 660, duration: 0.22, gain: 0.16, type: 'sawtooth', delay: 0.24 });
     },
+    /** Two-tone electronic alarm when a camera calls a guard over. */
+    alarm() {
+      if (!ctx) return;
+      for (let i = 0; i < 3; i += 1) {
+        tone({ frequency: 1240, duration: 0.09, gain: 0.1, type: 'square', delay: i * 0.2 });
+        tone({ frequency: 880, duration: 0.09, gain: 0.1, type: 'square', delay: i * 0.2 + 0.1 });
+      }
+    },
     /** Bright chime for the Star Sapphire. */
     pickup() {
       if (!ctx) return;

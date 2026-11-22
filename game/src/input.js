@@ -9,6 +9,9 @@ import { GAIT_RUN, GAIT_SNEAK, GAIT_WALK } from './player.js';
 
 export const ACTION_CONFIRM = 1;
 export const ACTION_PAUSE = 2;
+export const ACTION_NOTES = 4;
+export const ACTION_REPLAY = 8;
+export const ACTION_TITLE = 16;
 
 const UP = new Set(['ArrowUp', 'KeyW']);
 const DOWN = new Set(['ArrowDown', 'KeyS']);
@@ -18,6 +21,9 @@ const RUN = new Set(['ShiftLeft', 'ShiftRight']);
 const SNEAK = new Set(['KeyC', 'ControlLeft', 'ControlRight']);
 const CONFIRM = new Set(['Space', 'Enter']);
 const PAUSE = new Set(['KeyP', 'Escape']);
+const NOTES = new Set(['KeyH']);
+const REPLAY = new Set(['KeyR']);
+const TITLE = new Set(['KeyT']);
 
 export function createInput(canvas) {
   const held = { up: false, down: false, left: false, right: false, run: false, sneak: false };
@@ -35,6 +41,12 @@ export function createInput(canvas) {
       if (!event.repeat) actions |= ACTION_CONFIRM;
     } else if (PAUSE.has(event.code)) {
       if (!event.repeat) actions |= ACTION_PAUSE;
+    } else if (NOTES.has(event.code)) {
+      if (!event.repeat) actions |= ACTION_NOTES;
+    } else if (REPLAY.has(event.code)) {
+      if (!event.repeat) actions |= ACTION_REPLAY;
+    } else if (TITLE.has(event.code)) {
+      if (!event.repeat) actions |= ACTION_TITLE;
     } else return;
     event.preventDefault();
   });

@@ -29,7 +29,9 @@ export function createGuard(spawn) {
     x: spawn.x,
     y: spawn.y,
     radius: GUARD.radius,
-    angle: Math.atan2(next.y - spawn.y, next.x - spawn.x),
+    angle: spawn.sentinel
+      ? spawn.sweepBase
+      : Math.atan2(next.y - spawn.y, next.x - spawn.x),
     visionRange: GUARD.visionRange,
     visionHalfAngle: GUARD.visionHalfAngle,
     route: spawn.route,
@@ -47,6 +49,17 @@ export function createGuard(spawn) {
     stuckTimer: 0,
     lastX: spawn.x,
     lastY: spawn.y,
+    // Sentinels hold one post and sweep their gaze instead of walking
+    // a route; everything else (senses, chase, investigate) is shared.
+    sentinel: Boolean(spawn.sentinel),
+    homeX: spawn.x,
+    homeY: spawn.y,
+    sweepBase: spawn.sweepBase ?? 0,
+    sweepAmp: spawn.sweepAmp ?? 0.8,
+    sweepSpeed: spawn.sweepSpeed ?? 0.5,
+    clock: 0,
+    // Display name for the alert banner; main.js assigns the roster.
+    name: '',
   };
 }
 
@@ -105,6 +118,7 @@ function nearestWaypoint(guard) {
  */
 export function updateGuard(grid, guard, player, dt) {
   let events = 0;
+  guard.clock += dt;
 
   // --- Senses -------------------------------------------------------
   const seen = visionStrength(grid, guard, player.x, player.y);
@@ -148,10 +162,15 @@ export function updateGuard(grid, guard, player, dt) {
 
   // --- Movement per state ---------------------------------------------
   if (guard.state === GUARD_PATROL) {
-    const point = guard.route[guard.waypoint];
-    walkToward(grid, guard, point.x, point.y, GUARD.patrolSpeed, dt);
-    if (Math.hypot(point.x - guard.x, point.y - guard.y) < ARRIVE) {
-      guard.waypoint = (guard.waypoint + 1) % guard.route.length;
+    if (guard.sentinel) {
+      // Hold the post: sweep the gaze on a slow sine instead of walking.
+      guard.angle = guard.sweepBase + Math.sin(guard.clock * guard.sweepSpeed) * guard.sweepAmp;
+    } else {
+      const point = guard.route[guard.waypoint];
+      walkToward(grid, guard, point.x, point.y, GUARD.patrolSpeed, dt);
+      if (Math.hypot(point.x - guard.x, point.y - guard.y) < ARRIVE) {
+        guard.waypoint = (guard.waypoint + 1) % guard.route.length;
+      }
     }
   } else if (guard.state === GUARD_STARE) {
     guard.angle = turnToward(
